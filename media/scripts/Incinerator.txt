@@ -1,0 +1,27 @@
+module RPGarbageDisposal {
+    imports
+    {
+        Base
+    }
+
+    item RPIncinerator {
+        WeightReduction     = 1,
+        Weight              = 40,
+        Type                = Container,
+        Capacity            = 200,
+        DisplayName         = Incinerator,
+        Icon                = RPIncinerator,
+        ResizeWorldIcon     = 2.0,
+    }
+
+    recipe Make Incinerator {
+        SheetMetal=4,
+        keep BlowTorch,
+        keep WeldingMask,
+        Result:RPIncinerator,
+        Time:300,
+        SkillRequired:MetalWelding=2,
+        Category:Welding,
+        OnCreate: RP_onCreateIncinerator,
+    }
+}

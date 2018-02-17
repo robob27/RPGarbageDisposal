@@ -1,0 +1,16 @@
+module RPGarbageDisposal {
+    imports
+    {
+        Base, farming
+    }
+
+	item RPLandfill {
+	    WeightReduction     = 1,
+	    Weight              = 10000,
+	    Type                = Container,
+	    Capacity            = 500,
+	    DisplayName         = Landfill,
+	    Icon                = RPLandfill,
+		ResizeWorldIcon     = 2.0,
+	}
+}
