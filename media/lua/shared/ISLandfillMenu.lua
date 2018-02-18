@@ -6,38 +6,38 @@ local DIG_LANDFILL_ENTRY = 'Dig Landfill';
 local FILL_LANDFILL_ENTRY = 'Fill Landfill';
 
 ISLandfillMenu.doDigLandfillMenu = function(player, context, worldobjects, test)
-	if test and ISWorldObjectContextMenu.Test then return true end
+    if test and ISWorldObjectContextMenu.Test then return true end
 
     local existingLandfillItem, existingLandfillSquare = ISLandfillMenu.canFillLandfillHere(worldobjects);
 
     if existingLandfillItem == false then
-    	local playerObj = getSpecificPlayer(player);
-    	local playerInv = playerObj:getInventory();
-    	local digLandfillSquare = ISLandfillMenu.canDigLandfillHere(worldobjects);
+        local playerObj = getSpecificPlayer(player);
+        local playerInv = playerObj:getInventory();
+        local digLandfillSquare = ISLandfillMenu.canDigLandfillHere(worldobjects);
 
-    	if playerInv:contains("Shovel") and ISLandfillMenu.canDigLandfillHere(worldobjects) ~= false then
-    		if test then return ISWorldObjectContextMenu.setTest() end
-    		local handItem = playerObj:getPrimaryHandItem();
+        if playerInv:contains("Shovel") and ISLandfillMenu.canDigLandfillHere(worldobjects) ~= false then
+            if test then return ISWorldObjectContextMenu.setTest() end
+            local handItem = playerObj:getPrimaryHandItem();
 
-    		context:addOption(DIG_LANDFILL_ENTRY, worldobjects, ISLandfillMenu.DigLandfillTA, player, handItem, digLandfillSquare);
-    	end
+            context:addOption(DIG_LANDFILL_ENTRY, worldobjects, ISLandfillMenu.DigLandfillTA, player, handItem, digLandfillSquare);
+        end
     end
 end
 
 ISLandfillMenu.doWorldFillLandfillMenu = function(player, context, worldobjects, test)
-	if test and ISWorldObjectContextMenu.Test then return true end
+    if test and ISWorldObjectContextMenu.Test then return true end
 
-	local playerObj = getSpecificPlayer(player);
-	local playerInv = playerObj:getInventory();
+    local playerObj = getSpecificPlayer(player);
+    local playerInv = playerObj:getInventory();
 
-	local landfillItem, landfillSquare = ISLandfillMenu.canFillLandfillHere(worldobjects);
-	
-	if playerInv:contains("Shovel") and landfillItem ~= false then
-		if test then return ISWorldObjectContextMenu.setTest() end
-		local handItem = playerObj:getPrimaryHandItem();
+    local landfillItem, landfillSquare = ISLandfillMenu.canFillLandfillHere(worldobjects);
+    
+    if playerInv:contains("Shovel") and landfillItem ~= false then
+        if test then return ISWorldObjectContextMenu.setTest() end
+        local handItem = playerObj:getPrimaryHandItem();
 
-		context:addOption(FILL_LANDFILL_ENTRY, worldobjects, ISLandfillMenu.FillLandfillTA, player, handItem, landfillItem, landfillSquare);
-	end
+        context:addOption(FILL_LANDFILL_ENTRY, worldobjects, ISLandfillMenu.FillLandfillTA, player, handItem, landfillItem, landfillSquare);
+    end
 end
 
 ISLandfillMenu.doInventoryFillLandfillMenu = function(playerIndex, context, items)
@@ -51,9 +51,9 @@ ISLandfillMenu.doInventoryFillLandfillMenu = function(playerIndex, context, item
     local handItem;
 
     if playerInventory:contains("Shovel") then
-    	handItem = player:getPrimaryHandItem();
+        handItem = player:getPrimaryHandItem();
     else
-    	return;
+        return;
     end
 
     local item;
@@ -61,9 +61,9 @@ ISLandfillMenu.doInventoryFillLandfillMenu = function(playerIndex, context, item
 
     -- Iterate through all clicked items
     for _, entry in ipairs(items) do
-        local isGarbageDisposalItem = instanceof(entry, "InventoryItem") and entry:getType() == "RPLandfill";
+        local isLandfill = instanceof(entry, "InventoryItem") and entry:getType() == "RPLandfill";
 
-        if isGarbageDisposalItem then
+        if isLandfill then
             item = entry;
             break;
         elseif type(entry) == "table" then
@@ -89,14 +89,14 @@ ISLandfillMenu.doInventoryFillLandfillMenu = function(playerIndex, context, item
     if stack and stack.items then
         for i = 1, #stack.items do
             local stackItem = stack.items[i];
-            local isGarbageDisposalItem = instanceof(stackItem, "InventoryItem") and stackItem:getType() == "RPLandfill";
+            local isLandfill = instanceof(stackItem, "InventoryItem") and stackItem:getType() == "RPLandfill";
 
-            if isGarbageDisposalItem then
-                local garbageDisposalWorldItem = stackItem:getWorldItem();
+            if isLandfill then
+                local landfillItem = stackItem:getWorldItem();
                 local landfillSquare;
 
-                if garbageDisposalWorldItem then
-                    landfillSquare = garbageDisposalWorldItem:getSquare();
+                if landfillItem then
+                    landfillSquare = landfillItem:getSquare();
                 else
                     landfillSquare = nil;
                 end
@@ -109,97 +109,101 @@ ISLandfillMenu.doInventoryFillLandfillMenu = function(playerIndex, context, item
 end
 
 ISLandfillMenu.FillLandfillTA = function(worldobjects, player, handItem, landfillItem, landfillSquare)
-	local playerObj = getSpecificPlayer(player);
-	local handItem = playerObj:getPrimaryHandItem();
+    local playerObj = getSpecificPlayer(player);
+    local handItem = playerObj:getPrimaryHandItem();
 
-	if not (handItem and handItem:getType() == "Shovel") then
-		handItem = ISWorldObjectContextMenu.equip(playerObj, handItem, "Shovel", true)
-		if handItem:getType() ~= "Shovel" then
-			handItem = nil;
-		end
-	end
+    if not (handItem and handItem:getType() == "Shovel") then
+        handItem = ISWorldObjectContextMenu.equip(playerObj, handItem, "Shovel", true)
+        if handItem:getType() ~= "Shovel" then
+            handItem = nil;
+        end
+    end
 
-	if handItem then
-		ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, landfillSquare));
-		ISTimedActionQueue.add(RPFillLandfillAction:new(playerObj, worldobjects, handItem, landfillItem, landfillSquare, 300));
-	end
+    if handItem then
+        ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, landfillSquare));
+        ISTimedActionQueue.add(RPFillLandfillAction:new(playerObj, worldobjects, handItem, landfillItem, landfillSquare, 300));
+    end
 end
 
 ISLandfillMenu.DigLandfillTA = function(worldobjects, player, handItem, digLandfillSquare)
-	local playerObj = getSpecificPlayer(player);
-	local handItem = playerObj:getPrimaryHandItem();
+    local playerObj = getSpecificPlayer(player);
+    local handItem = playerObj:getPrimaryHandItem();
 
-	if not (handItem and handItem:getType() == "Shovel") then
-		handItem = ISWorldObjectContextMenu.equip(playerObj, handItem, "Shovel", true)
-		if handItem:getType() ~= "Shovel" then
-			handItem = nil;
-		end
-	end
-	ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, digLandfillSquare));
-	ISTimedActionQueue.add(RPDigLandfillAction:new(playerObj, worldobjects, handItem, digLandfillSquare, 300));
+    if not (handItem and handItem:getType() == "Shovel") then
+        handItem = ISWorldObjectContextMenu.equip(playerObj, handItem, "Shovel", true)
+        if handItem:getType() ~= "Shovel" then
+            handItem = nil;
+        end
+    end
+    ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, digLandfillSquare));
+    ISTimedActionQueue.add(RPDigLandfillAction:new(playerObj, worldobjects, handItem, digLandfillSquare, 300));
 end
 
 ISLandfillMenu.onDigLandfill = function(worldobjects, playerObj, handItem)
-	playerObj:getCurrentSquare():AddWorldInventoryItem("RPGarbageDisposal.RPLandfill", 0.0, 0.0, 0.0);
+    playerObj:getCurrentSquare():AddWorldInventoryItem("RPGarbageDisposal.RPLandfill", 0.0, 0.0, 0.0);
 end
 
-ISLandfillMenu.onFillLandfill = function(landfillItem, landfillSquare, character)
-	landfillItem:getWorldItem():getSquare():transmitRemoveItemFromSquare(landfillItem:getWorldItem());
-	landfillItem:getWorldItem():removeFromSquare();
+ISLandfillMenu.onFillLandfill = function(landfillItem, character)
+    if instanceof(landfillItem, 'InventoryContainer') then
+        landfillItem = landfillItem:getWorldItem();
+    end
 
-	local pdata = getPlayerData(character:getPlayerNum());
+    landfillItem:getSquare():transmitRemoveItemFromSquare(landfillItem);
+    landfillItem:removeFromSquare();
 
-	if pdata then
-		pdata.lootInventory:refreshBackpacks();
-	end
+    local pdata = getPlayerData(character:getPlayerNum());
+
+    if pdata then
+        pdata.lootInventory:refreshBackpacks();
+    end
 end
 
 ISLandfillMenu.canFillLandfillHere = function(worldObjects)
-	local squares = {}
-	local didSquare = {}
+    local squares = {}
+    local didSquare = {}
 
-	for _,worldObj in ipairs(worldObjects) do
-		if not didSquare[worldObj:getSquare()] then
-			table.insert(squares, worldObj:getSquare())
-			didSquare[worldObj:getSquare()] = true
-		end
-	end
+    for _,worldObj in ipairs(worldObjects) do
+        if not didSquare[worldObj:getSquare()] then
+            table.insert(squares, worldObj:getSquare())
+            didSquare[worldObj:getSquare()] = true
+        end
+    end
 
-	for _,square in ipairs(squares) do
-		local items = square:getWorldObjects();
+    for _,square in ipairs(squares) do
+        local items = square:getWorldObjects();
 
-		for i=0,items:size()-1 do
-			local item = items:get(i):getItem();
-			local itemName = item:getDisplayName();
-				
-			if item and itemName == "Landfill" then
-				return items:get(i):getItem(), square
-			end
-		end
-	end
+        for i=0,items:size()-1 do
+            local item = items:get(i):getItem();
+            local itemName = item:getDisplayName();
+                
+            if item and itemName == "Landfill" then
+                return items:get(i):getItem(), square
+            end
+        end
+    end
 
-	return false, false
+    return false, false
 end
 
 ISLandfillMenu.canDigLandfillHere = function(worldObjects)
-	local squares = {}
-	local didSquare = {}
-	for _,worldObj in ipairs(worldObjects) do
-		if not didSquare[worldObj:getSquare()] then
-			table.insert(squares, worldObj:getSquare())
-			didSquare[worldObj:getSquare()] = true
-		end
-	end
-	for _,square in ipairs(squares) do
-		for i=1,square:getObjects():size() do
-			local obj = square:getObjects():get(i-1);
-			if obj:getTextureName() and (luautils.stringStarts(obj:getTextureName(), "floors_exterior_natural") or
-					luautils.stringStarts(obj:getTextureName(), "blends_natural_01")) then
-				return square
-			end
-		end
-	end
-	return false
+    local squares = {}
+    local didSquare = {}
+    for _,worldObj in ipairs(worldObjects) do
+        if not didSquare[worldObj:getSquare()] then
+            table.insert(squares, worldObj:getSquare())
+            didSquare[worldObj:getSquare()] = true
+        end
+    end
+    for _,square in ipairs(squares) do
+        for i=1,square:getObjects():size() do
+            local obj = square:getObjects():get(i-1);
+            if obj:getTextureName() and (luautils.stringStarts(obj:getTextureName(), "floors_exterior_natural") or
+                    luautils.stringStarts(obj:getTextureName(), "blends_natural_01")) then
+                return square
+            end
+        end
+    end
+    return false
 end
 
 
@@ -212,7 +216,7 @@ end
 function RPDigLandfillAction:update()
     local swingAnimation = self.item:getSwingAnim();
     self.character:PlayAnim("Attack_" .. swingAnimation);
-	self.character:faceLocation(self.digLandfillSquare:getX(), self.digLandfillSquare:getY())
+    self.character:faceLocation(self.digLandfillSquare:getX(), self.digLandfillSquare:getY())
     self.item:setJobDelta(self:getJobDelta());
 end
 
@@ -233,7 +237,7 @@ function RPDigLandfillAction:stop()
 end
 
 function RPDigLandfillAction:perform()
-	self.item:getContainer():setDrawDirty(true);
+    self.item:getContainer():setDrawDirty(true);
     self.item:setJobDelta(0.0);
 
     if self.sound and self.sound:isPlaying() then
@@ -242,7 +246,7 @@ function RPDigLandfillAction:perform()
 
     self.character:PlayAnim("Idle");
 
-	ISLandfillMenu.onDigLandfill(self.worldobjects, self.character, self.item);
+    ISLandfillMenu.onDigLandfill(self.worldobjects, self.character, self.item);
     ISBaseTimedAction.perform(self);
 end
 
@@ -270,7 +274,7 @@ function RPFillLandfillAction:update()
     local swingAnimation = self.item:getSwingAnim();
     self.character:PlayAnim("Attack_" .. swingAnimation);
 
-	self.character:faceLocation(self.landfillSquare:getX(), self.landfillSquare:getY())
+    self.character:faceLocation(self.landfillSquare:getX(), self.landfillSquare:getY())
     self.item:setJobDelta(self:getJobDelta());
 end
 
@@ -291,7 +295,7 @@ function RPFillLandfillAction:stop()
 end
 
 function RPFillLandfillAction:perform()
-	self.item:getContainer():setDrawDirty(true);
+    self.item:getContainer():setDrawDirty(true);
 
     self.item:setJobDelta(0.0);
 
@@ -302,7 +306,7 @@ function RPFillLandfillAction:perform()
     self.character:PlayAnim("Idle");
 
 
-	ISLandfillMenu.onFillLandfill(self.landfillItem, self.landfillSquare, self.character);
+    ISLandfillMenu.onFillLandfill(self.landfillItem, self.character);
     ISBaseTimedAction.perform(self);
 end
 

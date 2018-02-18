@@ -90,12 +90,17 @@ local function onAddTag(items, player, playerIndex)
 end
 
 local function ifTagMatchesQueueTransferItem(item, tag, player, garbageDisposal)
-    local category = item:getDisplayCategory();
-    if not category then
-        category = item:getCategory();
+    local category = item:getCategory();
+
+    -- handle different languages
+    local categoryConstant = 'IGUI_ItemCat_' .. category;
+    local translatedCategory = getText(categoryConstant);
+
+    if not translatedCategory then
+        translatedCategory = category;
     end
 
-    if category:lower() == tag:lower() or item:getName():lower() == tag:lower() or (tag:find('?') and item:getName():lower():find(tag:lower():sub(1,tag:len() - 1))) then
+    if translatedCategory:lower() == tag:lower() or item:getName():lower() == tag:lower() or (tag:find('?') and item:getName():lower():find(tag:lower():sub(1,tag:len() - 1))) then
         if luautils.haveToBeTransfered(player, item) then
             ISTimedActionQueue.add(ISInventoryTransferAction:new(player, item, item:getContainer(), player:getInventory()));
         end

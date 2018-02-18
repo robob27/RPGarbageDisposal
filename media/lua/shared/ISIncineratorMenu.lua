@@ -5,12 +5,12 @@ local MENU_ENTRY_BURNING  = "Incinerate Trash";
 ISIncineratorMenu = {};
 
 ISIncineratorMenu.doWorldObjectIncinerateMenu = function(playerIndex, context, worldobjects, test)
-	local incineratorItem, incineratorSquare = ISIncineratorMenu.canIncinerateTrashHere(worldobjects);
+    local incineratorItem, incineratorSquare = ISIncineratorMenu.canIncinerateTrashHere(worldobjects);
     local player = getSpecificPlayer(playerIndex);
 
-	if incineratorItem and incineratorSquare ~= nil and (player:getInventory():contains("Matches") or player:getInventory():contains("Lighter")) then
-		context:addOption(MENU_ENTRY_BURNING, worldobjects, ISIncineratorMenu.onIncinerateTA, playerIndex, incineratorItem, incineratorSquare);
-	end
+    if incineratorItem and incineratorSquare ~= nil and (player:getInventory():contains("Matches") or player:getInventory():contains("Lighter")) then
+        context:addOption(MENU_ENTRY_BURNING, worldobjects, ISIncineratorMenu.onIncinerateTA, playerIndex, incineratorItem, incineratorSquare);
+    end
 end
 
 ISIncineratorMenu.doInventoryIncinerateMenu = function(playerIndex, context, items)
